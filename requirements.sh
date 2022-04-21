@@ -4,3 +4,4 @@ pip3 install newspaper3k
 #pip install setuptools==57.5.0
 pip3 install setuptools==57.5.0
 pip3 install pygooglenews
+sudo pip3 install keyboard --upgrade
