@@ -5,6 +5,9 @@
 import pygooglenews
 import goose3
 import requests
+import threading
+import queue #python fa la copia dell'array per ogni processo. Non per altre strutture
+import keyboard
 
 #italian newspapers list
 newspapersIT = [
@@ -30,7 +33,9 @@ newspapersEN = [
 	"https://apnews.com"
 ]
 
-stories = [] #list of articles we will show
+stories = queue.Queue()
+mutex = threading.Lock() #for shared variable stories
+
 def getNews(lang, country, list):
 
 	gn = pygooglenews.GoogleNews(lang = lang, country = country)
@@ -47,8 +52,6 @@ def getNews(lang, country, list):
 		article = extractor.extract(url = resolvedLink)
 		text = article.cleaned_text
 		summary = article.meta_description
-		print(image)
-		input()
 
 		story = {
 			"title": mainTopicArticle.title,
@@ -59,16 +62,32 @@ def getNews(lang, country, list):
 			"text": text,
 			"summary": summary
 		}
-		
-		stories.append(story)
+
+		mutex.acquire()
+		stories.put(story)
+		mutex.release()
 
 	return
 
-getNews("it", "IT", newspapersIT)
-getNews("en", "US", newspapersEN)
 
-for story in stories:
-	print(f"newspaper: {story['sourceName']}")
+tuples = [("it", "IT", newspapersIT), ("en", "US", newspapersEN)]
+concurrentProcesses = []
+
+for tuple in tuples:
+	process = threading.Thread(target=getNews, args=tuple)
+	concurrentProcesses.append(process)
+	process.start()
+print("scraping...")
+
+for process in concurrentProcesses:
+	process.join()
+
+keyboard.add_hotkey("ctrl+e", lambda: print("\n\n" + story['text'] + "\n\n"))
+
+while stories.qsize():
+
+	story = stories.get()
+	print(f"\nnewspaper: {story['sourceName']}")
 	print(f"title: {story['title']}")
 	print(f"summary: {story['summary']}")
 	print(f"published date: {story['published']}")
