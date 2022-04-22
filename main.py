@@ -70,6 +70,7 @@ def getNews(lang, country, list):
 	return
 
 
+
 tuples = [("it", "IT", newspapersIT), ("en", "US", newspapersEN)]
 concurrentProcesses = []
 
