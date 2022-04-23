@@ -92,4 +92,5 @@ while stories.qsize():
 	print(f"title: {story['title']}")
 	print(f"summary: {story['summary']}")
 	print(f"published date: {story['published']}")
+	print(f"CTRL+E to show story\n")
 	input()
